@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="./jquery-3.4.1.min.js"></script>
+    <style>        
+        #game{
+            width:500px; 
+            height:500px;  
+            margin:auto; 
+            background-size: cover;
+            overflow:hidden;
+            position:relative;
+            background-image: url("./img1.jpg"); 
+            cursor:url(./cursor2.png) 50 50, auto;            
+        }
+
+        #game img{
+            height:100;
+            position: absolute;            
+        }
+
+        input{
+            width:200px;
+            height:40px;
+            margin:10px;
+            color:white;
+            font-size:25px;
+            font-weight:bold;
+            border-radius: 10px;           
+            background-color: rgb(214, 235, 137);
+        }
+    </style>
+</head>
+<body>
+    <div id="game"></div>
+    <div style="text-align:center">
+    <input type="button" value="開始遊戲" id="start">
+    <p>剩餘時間：<span id="sec">10</span>秒</p>
+    <p>目前分數：<span id="score">0</span>分</p>
+    <p>最高分數：<span id="highNameText">沒有人</span>的分數是<span id="highScoreText">0</span></p>
+    </div>
+    <script>
+        $(function () {
+           let score=0;
+           let sec=0;
+           let gametime=0;
+           let zbid=0;
+           
+           let high={name:"", score:0};
+           let highNameText=$("#highNameText").text();
+           let highScoreText=$("#highScoreText").text();
+             
+           let highStorage=window.localStorage.getItem("highscore");
+           if (highStorage != null) {
+               high=JSON.parse(highStorage);
+               $("#highNameText").text(high.name);
+               $("#highScoreText").text(high.score);               
+           }
+
+           let rand=(num)=>{
+              return Math.round(Math.random()*num);
+           }
+
+           let movezb=(id)=>{
+              $(`#zb${id}`).animate({
+                  left:rand(100)+"%",
+                  top:rand(100)+"%"                
+                },2000,function () {
+                    movezb(id);
+                    movezb(id);                   
+                })
+           }
+
+           $("#start").on("click", function () {
+               $(this).attr("disabled",true);
+               sec=10;
+               $("#sec").text(sec);
+               score=0;
+               $("#score").text(score);
+
+               gametimer=setInterval(()=>{
+                   sec--;
+                   $("#sec").text(sec);
+
+                   if (sec==0) {
+                       clearInterval(gametimer);
+                       $(this).attr("disabled",false);
+
+                       setTimeout(() => {
+                           alert(`時間到，你得到 ${score} 分！`);
+                           $("#game img").remove();
+
+                           if (score>high.score ) {
+                               let playerName=prompt("恭喜你得到最高分，請輸入你的名字！");
+                               high.name=playerName;
+                               $("#highNameText").text(playerName);
+                               high.score=score;
+                               $("#highScoreText").text(score);
+                               window.localStorage.setItem("highscore",JSON.stringfy(high));
+                           } 
+                       }, 100);
+                   }
+
+                   let num=rand(10);
+                   if (num>0) {
+                      $("#game").append(`<img src="./k.gif" id="zb${zbid}">`);
+                      $(`#zb${zbid}`).css({
+                          left:rand(100)+"%",
+                          top:rand(100)+"%"
+                      });
+                      movezb(zbid);
+                      zbid++;                       
+                   }
+               },1000)
+           })    
+
+           $("#game").on("click", "img",function () {
+               $(this).attr("src","./blood.png");
+               $(this).stop();
+               $(this).css("pointer-events","none");
+               score++;
+               $("#score").text(score);
+           })
+
+        })     
+    
+    </script>
+</body>
+</html>
